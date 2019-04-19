@@ -10,9 +10,10 @@
 package main
 
 import (
+	sw "github.com/olivernadj/secret-server-task/goapi/src/go"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
 	"net/http"
-	sw "github.com/olivernadj/secret-server-task/goapi/src/go"
 )
 
 func main() {
@@ -22,6 +23,8 @@ func main() {
 
 	sh := http.StripPrefix("/v1/ui/", http.FileServer(http.Dir("./swaggerui/")))
 	router.PathPrefix("/v1/ui/").Handler(sh)
+
+	router.Path("/metrics").Handler(promhttp.Handler())
 
 	log.Fatal(http.ListenAndServe(":8081", router))
 }

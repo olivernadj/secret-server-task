@@ -22,6 +22,7 @@ type Route struct {
 	Method      string
 	Pattern     string
 	HandlerFunc http.HandlerFunc
+	Monitor     bool
 }
 
 type Routes []Route
@@ -32,6 +33,9 @@ func NewRouter() *mux.Router {
 		var handler http.Handler
 		handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
+
+		summaryVec := BuildSummaryVec(route.Name, route.Method+" "+route.Pattern)
+		handler = WithMonitoring(handler, route, summaryVec)
 
 		router.
 			Methods(route.Method).
@@ -53,6 +57,7 @@ var routes = Routes{
 		"GET",
 		"/v1/",
 		Index,
+		true,
 	},
 
 	Route{
@@ -60,6 +65,7 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/v1/secret",
 		AddSecret,
+		true,
 	},
 
 	Route{
@@ -67,5 +73,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/v1/secret/{hash}",
 		GetSecretByHash,
+		true,
 	},
 }
