@@ -25,7 +25,7 @@ It is totaly OK to ask if something is not clear.
 Git clone:
 ```
 ~$git clone https://github.com/olivernadj/secret-server-task
-~$ cd metrics
+~$ cd secret-server-task
 ```
 To get the containers up and running, run this command:
 ```
