@@ -11,6 +11,7 @@ package swagger
 
 import (
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
 	"strings"
 
@@ -29,6 +30,9 @@ type Routes []Route
 
 func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
+	sh := http.StripPrefix("/v1/ui/", http.FileServer(http.Dir("./swaggerui/")))
+	router.PathPrefix("/v1/ui/").Handler(sh)
+
 	for _, route := range routes {
 		var handler http.Handler
 		handler = route.HandlerFunc
@@ -49,6 +53,12 @@ func NewRouter() *mux.Router {
 
 func Index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello World!")
+}
+
+
+func Metrics(w http.ResponseWriter, r *http.Request) {
+	p := promhttp.Handler()
+	p.ServeHTTP(w, r)
 }
 
 var routes = Routes{
@@ -74,5 +84,13 @@ var routes = Routes{
 		"/v1/secret/{hash}",
 		GetSecretByHash,
 		true,
+	},
+
+	Route{
+		"Metrics",
+		strings.ToUpper("Get"),
+		"/metrics",
+		Metrics,
+		false,
 	},
 }
