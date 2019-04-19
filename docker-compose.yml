@@ -1,0 +1,33 @@
+version: '3'
+services:
+  goapi:
+    image: golang:1.8
+    volumes:
+      - ./goapi/src:/go/src/goapi
+    working_dir: /go/src/goapi
+    ports:
+      - "8080:8080"
+    dns: 8.8.8.8
+    command: go run main.go -p 8080
+    restart: always
+  prometheus:
+    build: ./prometheus
+    volumes:
+      - ./prometheus/config:/etc/prometheus
+      - /prometheus
+    ports:
+      - "9090:9090"
+    links:
+      - goapi
+    restart: always
+  grafana:
+    image: grafana/grafana:6.0.2
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: 5ecret
+    volumes:
+      - /var/lib/grafana
+    ports:
+      - 3000:3000
+    links:
+      - prometheus
+    restart: always

@@ -21,3 +21,31 @@ be an issue. If this API was used in production, then HTTPS would be a must but 
 ## Questions
 It is totaly OK to ask if something is not clear. 
 
+## Build and maintain the containers
+Git clone:
+```
+~$git clone https://github.com/olivernadj/secret-server-task
+~$ cd metrics
+```
+To get the containers up and running, run this command:
+```
+cb-monitoring$ docker-compose up -d --build
+```
+To check running containers, run this command:
+```
+cb-monitoring$ watch "sudo docker ps --format='table{{.Image}}\t{{.Names}}\t{{.Status}}\t{{.Ports}}'"
+```
+For stop services, run this command:
+```
+cb-monitoring$ docker-compose stop
+```
+
+## Endpoints of services
+- Secret API
+  - http://localhost:8080/metrics Prometheus exporter
+  - http://localhost:8080/v1/ui/ Swagger Documentation
+  - http://localhost:8080/ Hello world
+- Prometheus: scraps metrics and store it in time series
+  - http://localhost:9090/graph
+- Grafana Access (admin/5ecret):
+  - http://localhost:3000/
