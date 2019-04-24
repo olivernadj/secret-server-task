@@ -1,9 +1,10 @@
 version: '3'
 services:
   goapi:
-    image: golang:1.8
+    image: golang:1.12
     volumes:
       - ./goapi/src:/go/src/goapi
+      - ./goapi/src:/go/src/github.com/olivernadj/secret-server-task/goapi/src
     working_dir: /go/src/goapi
     ports:
       - "8080:8080"
