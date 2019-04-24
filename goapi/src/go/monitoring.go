@@ -10,11 +10,11 @@ import (
 func BuildSummaryVec(metricName string, metricHelp string) *prometheus.SummaryVec {
 	summaryVec := prometheus.NewSummaryVec(
 		prometheus.SummaryOpts{
-			Namespace: "secret_api",
 			Name:      metricName,
 			Help:      metricHelp,
+			ConstLabels: prometheus.Labels{"service":"secret_api"},
 		},
-		[]string{"service"},
+		[]string{"handler", "code"},
 	)
 	prometheus.Register(summaryVec)
 	return summaryVec
@@ -23,24 +23,30 @@ func BuildSummaryVec(metricName string, metricHelp string) *prometheus.SummaryVe
 // WithMonitoring optionally adds a middleware that stores request duration and response size into the supplied
 // summaryVec
 func WithMonitoring(next http.Handler, route Route, summary *prometheus.SummaryVec) http.Handler {
-
-	// Just return the next handler if route shouldn't be monitored
-	if !route.Monitor {
-		return next
-	}
-
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		start := time.Now()
-		next.ServeHTTP(rw, req)
+		lrw := NewMonitoringResponseWriter(rw)
+		next.ServeHTTP(lrw, req)
+		statusCode := lrw.statusCode
 		duration := time.Since(start)
 
 		// Store duration of request
-		summary.WithLabelValues("duration").Observe(duration.Seconds())
-
-		// Store size of response, if possible.
-		size, err := strconv.Atoi(rw.Header().Get("Content-Length"))
-		if err == nil {
-			summary.WithLabelValues("size").Observe(float64(size))
-		}
+		summary.WithLabelValues(route.Name, strconv.FormatInt(int64(statusCode), 10)).Observe(duration.Seconds())
 	})
+}
+
+type monitoringResponseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func NewMonitoringResponseWriter(w http.ResponseWriter) *monitoringResponseWriter {
+	// WriteHeader(int) is not called if our response implicitly returns 200 OK, so
+	// we default to that status code.
+	return &monitoringResponseWriter{w, http.StatusOK}
+}
+
+func (lrw *monitoringResponseWriter) WriteHeader(code int) {
+	lrw.statusCode = code
+	lrw.ResponseWriter.WriteHeader(code)
 }

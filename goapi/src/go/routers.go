@@ -11,11 +11,9 @@ package swagger
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
-	"strings"
-
-	"github.com/gorilla/mux"
 )
 
 type Route struct {
@@ -24,6 +22,7 @@ type Route struct {
 	Pattern     string
 	HandlerFunc http.HandlerFunc
 	Monitor     bool
+	Log			bool
 }
 
 type Routes []Route
@@ -33,13 +32,17 @@ func NewRouter() *mux.Router {
 	sh := http.StripPrefix("/v1/ui/", http.FileServer(http.Dir("./swaggerui/")))
 	router.PathPrefix("/v1/ui/").Handler(sh)
 
+	summaryVec := BuildSummaryVec("http_response_time_milliseconds", "Latency Percentiles in Milliseconds")
+
 	for _, route := range routes {
 		var handler http.Handler
 		handler = route.HandlerFunc
-		handler = Logger(handler, route.Name)
-
-		summaryVec := BuildSummaryVec(route.Name, route.Method+" "+route.Pattern)
-		handler = WithMonitoring(handler, route, summaryVec)
+		if route.Log {
+			handler = Logger(handler, route.Name)
+		}
+		if route.Monitor {
+			handler = WithMonitoring(handler, route, summaryVec)
+		}
 
 		router.
 			Methods(route.Method).
@@ -68,29 +71,33 @@ var routes = Routes{
 		"/v1/",
 		Index,
 		true,
+		true,
 	},
 
 	Route{
 		"AddSecret",
-		strings.ToUpper("Post"),
+		"POST",
 		"/v1/secret",
 		AddSecret,
+		true,
 		true,
 	},
 
 	Route{
 		"GetSecretByHash",
-		strings.ToUpper("Get"),
+		"GET",
 		"/v1/secret/{hash}",
 		GetSecretByHash,
+		true,
 		true,
 	},
 
 	Route{
 		"Metrics",
-		strings.ToUpper("Get"),
+		"GET",
 		"/metrics",
 		Metrics,
+		false,
 		false,
 	},
 }
