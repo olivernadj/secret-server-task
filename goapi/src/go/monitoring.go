@@ -31,7 +31,7 @@ func WithMonitoring(next http.Handler, route Route, summary *prometheus.SummaryV
 		duration := time.Since(start)
 
 		// Store duration of request
-		summary.WithLabelValues(route.Name, strconv.FormatInt(int64(statusCode), 10)).Observe(duration.Seconds())
+		summary.WithLabelValues(route.Name, strconv.FormatInt(int64(statusCode), 10)).Observe(duration.Seconds() * 1000)
 	})
 }
 

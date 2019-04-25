@@ -13,7 +13,7 @@ if [[ -z "$1" ]]; then HOST="http://localhost:8080/v1"; else HOST=$1; fi
 
 loadGet () {
     if [[ -z "$2" ]]; then SLEEP_RAND=5; else SLEEP_RAND=$2; fi
-    if [[ -z "$3" ]]; then REQUESTS_RAND=5; else REQUESTS_RAND=$2; fi
+    if [[ -z "$3" ]]; then REQUESTS_RAND=5; else REQUESTS_RAND=$3; fi
     (
         while [[ 1 ]]   # Endless loop.
         do
@@ -27,7 +27,7 @@ loadGet () {
 
 loadPost () {
     if [[ -z "$2" ]]; then SLEEP_RAND=5; else SLEEP_RAND=$2; fi
-    if [[ -z "$3" ]]; then REQUESTS_RAND=5; else REQUESTS_RAND=$2; fi
+    if [[ -z "$3" ]]; then REQUESTS_RAND=5; else REQUESTS_RAND=$3; fi
     (
         while [[ 1 ]]   # Endless loop.
         do
@@ -39,9 +39,9 @@ loadPost () {
     ) &
 }
 
-loadGet "$HOST/" 7 5
-loadPost "$HOST/secret" 20 10
-loadGet "$HOST/secret/test" 15 30
+loadGet "$HOST/" 7 50
+loadPost "$HOST/secret" 20 100
+loadGet "$HOST/secret/test" 15 300
 
 
 trap ctrl_c INT
