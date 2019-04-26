@@ -21,6 +21,24 @@ be an issue. If this API was used in production, then HTTPS would be a must but 
 ## Questions
 It is totaly OK to ask if something is not clear. 
 
+## Production endpoints
+Make sure your hosts config resolve these hosts.
+```
+178.128.143.215 api.your-secret-server.com grafana.your-secret-server.com prometheus.your-secret-server.com
+```
+
+
+#### Development Endpoints of services
+- Secret API
+  - http://api.your-secret-server.com/metrics Prometheus exporter
+  - http://api.your-secret-server.com/v1/ui/ Swagger Documentation
+  - http://api.your-secret-server.com/ Hello world
+- Grafana Access (admin/5ecret):
+  - http://grafana.your-secret-server.com/
+- Prometheus: scraps metrics and store it in time series
+  - http://prometheus.your-secret-server.com/graph for debugging purpose
+
+
 ## Build and maintain the containers
 
 ### Development on docker compose
@@ -42,7 +60,7 @@ For stop services, run this command:
 $ docker-compose stop
 ```
 
-#### Endpoints of services
+#### Development Endpoints of services
 - Secret API
   - http://localhost:8080/metrics Prometheus exporter
   - http://localhost:8080/v1/ui/ Swagger Documentation
@@ -94,11 +112,24 @@ cd nginx &&\
 ### Create deployments and services
 ```
 cd kube
-kube$ kubectl create -f goapi-service.yaml,goapi-deployment.yaml,prometheus-service.yaml,prometheus-deployment.yaml,grafana-service.yaml,grafana-deployment.yaml
+kube$ kubectl create -f goapi-service.yaml,goapi-deployment.yaml,prometheus-service.yaml,prometheus-deployment.yaml,grafana-service.yaml,grafana-deployment.yaml,nginx-service.yaml,nginx-deployment.yaml
 
 ```
 
-##3 Clean up everything
+### List services
+
+```
+kube$ kubectl get svc
+NAME         CLUSTER-IP       EXTERNAL-IP      PORT(S)        AGE
+goapi        10.245.164.247   <none>           8080/TCP       28s
+grafana      10.245.84.205    <none>           3000/TCP       26s
+kubernetes   10.245.0.1       <none>           443/TCP        30m
+nginx        10.245.180.76    178.128.143.215  80:30906/TCP   26s
+prometheus   10.245.120.173   <none>           9090/TCP       27s
+
+```
+
+### Clean up everything
 
 ```
 kubectl delete --all pods && \
@@ -106,4 +137,9 @@ kubectl delete --all pods && \
   kubectl delete --all services
 ```
 
+## Fake load test
 
+```
+$ ./fakeload.sh http://api.your-secret-server.com/v1
+
+```
