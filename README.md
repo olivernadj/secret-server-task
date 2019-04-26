@@ -70,4 +70,40 @@ cd goapi &&\
   docker push olivernadj/secret-api-goapi &&\
   cd ..
 
+cd prometheus &&\
+  docker build -t secret-api-prometheus:1.0.0 . &&\
+  docker tag secret-api-prometheus:1.0.0 olivernadj/secret-api-prometheus:1.0.0 &&\
+  docker push olivernadj/secret-api-prometheus:1.0.0 &&\
+  docker tag secret-api-prometheus:1.0.0 olivernadj/secret-api-prometheus &&\
+  docker push olivernadj/secret-api-prometheus &&\
+  cd ..
+
+cd nginx &&\
+  docker build -t secret-api-nginx:1.0.0 . &&\
+  docker tag secret-api-nginx:1.0.0 olivernadj/secret-api-nginx:1.0.0 &&\
+  docker push olivernadj/secret-api-nginx:1.0.0 &&\
+  docker tag secret-api-nginx:1.0.0 olivernadj/secret-api-nginx &&\
+  docker push olivernadj/secret-api-nginx &&\
+  cd ..
+
 ```
+
+
+## Maintain Kubernetes
+
+### Create deployments and services
+```
+cd kube
+kube$ kubectl create -f goapi-service.yaml,goapi-deployment.yaml,prometheus-service.yaml,prometheus-deployment.yaml,grafana-service.yaml,grafana-deployment.yaml
+
+```
+
+##3 Clean up everything
+
+```
+kubectl delete --all pods && \
+  kubectl delete --all deployments && \
+  kubectl delete --all services
+```
+
+

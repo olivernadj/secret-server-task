@@ -22,3 +22,12 @@ services:
     links:
       - prometheus
     restart: always
+  nginx:
+    image: olivernadj/secret-api-nginx:1.0.0
+    ports:
+      - 80:80
+    links:
+      - goapi
+      - prometheus
+      - grafana
+    restart: always

@@ -9,7 +9,6 @@ metadata:
     io.kompose.service: goapi
   name: goapi
 spec:
-  type: LoadBalancer
   ports:
   - name: "8080"
     port: 8080

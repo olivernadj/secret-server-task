@@ -8,13 +8,11 @@ services:
     working_dir: /go/src/goapi
     ports:
       - "8080:8080"
-    dns: 8.8.8.8
     command: go run main.go -p 8080
 #    restart: always
   prometheus:
     build: ./prometheus
     volumes:
-      - ./prometheus/config:/etc/prometheus
       - /prometheus
     ports:
       - "9090:9090"
@@ -26,11 +24,19 @@ services:
     environment:
       GF_SECURITY_ADMIN_PASSWORD: 5ecret
     volumes:
-      #      - /var/lib/grafana
       - ./grafana:/var/lib/grafana
     ports:
       - 3000:3000
     user: "1000"
     links:
       - prometheus
+#    restart: always
+  nginx:
+    build: ./nginx
+    ports:
+      - 80:80
+    links:
+      - goapi
+      - prometheus
+      - grafana
 #    restart: always
