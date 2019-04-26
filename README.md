@@ -61,4 +61,13 @@ cd grafana &&\
   docker tag secret-api-grafana:1.0.0 olivernadj/secret-api-grafana &&\
   docker push olivernadj/secret-api-grafana &&\
   cd ..
+  
+cd goapi &&\
+  docker build -t secret-api-goapi:1.0.0 . &&\
+  docker tag secret-api-goapi:1.0.0 olivernadj/secret-api-goapi:1.0.0 &&\
+  docker push olivernadj/secret-api-goapi:1.0.0 &&\
+  docker tag secret-api-goapi:1.0.0 olivernadj/secret-api-goapi &&\
+  docker push olivernadj/secret-api-goapi &&\
+  cd ..
+
 ```
