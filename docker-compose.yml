@@ -1,11 +1,28 @@
 version: '3'
 services:
+  redis:
+    image: redis:5
+    volumes:
+      - /data
+    ports:
+      - "6379:6379"
+    command: "--maxmemory 100mb"
+#    restart: always
+  redis_exporter:
+    image: oliver006/redis_exporter
+    environment:
+      REDIS_ADDR: redis:6379
+    ports:
+      - "9121:9121"
+#    restart: always
   goapi:
     image: golang:1.12
     volumes:
       - ./goapi/src:/go/src/goapi
       - ./goapi/src:/go/src/github.com/olivernadj/secret-server-task/goapi/src
     working_dir: /go/src/goapi
+    environment:
+      REDIS_ADDR: redis:6379
     ports:
       - "8080:8080"
     command: go run main.go -p 8080

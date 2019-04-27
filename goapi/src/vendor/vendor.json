@@ -15,6 +15,12 @@
 			"revisionTime": "2017-11-13T18:07:20Z"
 		},
 		{
+			"checksumSHA1": "29SMun24tC5a7pMCmb9Ay8RP1ic=",
+			"path": "github.com/gomodule/redigo/redis",
+			"revision": "39e2c31b7ca38b521ceb836620a269e62c895dc9",
+			"revisionTime": "2019-03-22T06:41:13Z"
+		},
+		{
 			"checksumSHA1": "g/V4qrXjUGG9B+e3hB+4NAYJ5Gs=",
 			"path": "github.com/gorilla/context",
 			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
