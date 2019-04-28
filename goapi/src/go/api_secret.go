@@ -14,7 +14,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
-	db "github.com/olivernadj/secret-server-task/goapi/src/go/redis"
 	"log"
 	"net/http"
 	"regexp"
@@ -29,79 +28,15 @@ type AddSecretParams struct {
 	expireAfterViews  string
 }
 
-
-
-func AddSecret(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	err := r.ParseForm()
-	if err != nil {
-		w.WriteHeader(http.StatusMethodNotAllowed) // 405 as swagger specified
-		log.Println(err)
-		fmt.Fprint(w, err)
-		return
-	}
-	p := r.Form
-	sp := AddSecretParams{
-		Secret: p.Get("secret"),
-		expireAfterViews: p.Get("expireAfterViews"),
-		ExpireAfter: p.Get("expireAfter"),
-	}
-	err = sp.Validate()
-	if err != nil {
-		w.WriteHeader(http.StatusMethodNotAllowed) // 405 as swagger specified
-		fmt.Fprint(w, err)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	expAfter, _ := strconv.ParseInt (sp.ExpireAfter, 10, 64)
-	expCount, _ := strconv.ParseInt (sp.expireAfterViews, 10, 32)
-	secret := Secret{
-		SecretText:sp.Secret,
-		RemainingViews:int32(expCount),
-		ExpiresAt: time.Now().Add( time.Duration(expAfter) * time.Minute),
-		CreatedAt: time.Now(),
-	}
-	secret.encrypt()
-	j, _ := json.Marshal(secret)
-	db.Setex(secret.Hash, expAfter, string(j))
-	fmt.Fprint(w, string(j))
-
+type ErrorResponse struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }
 
-func GetSecretByHash(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	//w.WriteHeader(http.StatusOK)
-	vars := mux.Vars(r)
-	hash, ok := vars["hash"]
-	if !ok || len(hash) != 32 {
-		w.WriteHeader(http.StatusNotFound) // 404 as swagger specified
-		return
-	}
-	j := db.MustGet(hash)
-	if j == "" {
-		w.WriteHeader(http.StatusNotFound) // 404 as swagger specified
-		return
-	}
-	secret := Secret{}
-	err := json.Unmarshal([]byte(j), &secret)
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound) // 404 as swagger specified
-		log.Println(err)
-		fmt.Fprint(w, err)
-		return
-	}
-	decrypted, err := secret.getDecryptedSecret()
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		log.Println(err)
-		fmt.Fprint(w, err)
-		return
-	}
-	secret.SecretText = decrypted
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "%+v\n", secret)
-}
+
+//func responseWriter(w http.ResponseWriter, r *http.Request, statusCode int, body interface{}) {
+//
+//}
 
 
 func (sp *AddSecretParams) Validate() error {
@@ -119,4 +54,97 @@ func (sp *AddSecretParams) Validate() error {
 		return errors.New("expireAfter must be an integer, equals or grater 0")
 	}
 	return nil
+}
+
+
+func AddSecret(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	err := r.ParseForm()
+	if err != nil {
+		w.WriteHeader(http.StatusMethodNotAllowed) // 405 as swagger specified
+		log.Println(err)
+		return
+	}
+	p := r.Form
+	sp := AddSecretParams{
+		Secret: p.Get("secret"),
+		expireAfterViews: p.Get("expireAfterViews"),
+		ExpireAfter: p.Get("expireAfter"),
+	}
+	err = sp.Validate()
+	if err != nil {
+		w.WriteHeader(http.StatusMethodNotAllowed) // 405 as swagger specified
+		fmt.Fprint(w, err)
+		return
+	}
+	expAfter, _ := strconv.ParseInt (sp.ExpireAfter, 10, 64)
+	expCount, _ := strconv.ParseInt (sp.expireAfterViews, 10, 32)
+    createdAt   := time.Now()
+	secret := Secret{
+		SecretText:sp.Secret,
+		RemainingViews:int32(expCount),
+		ExpiresAt: createdAt.Add( time.Duration(expAfter) * time.Minute),
+		CreatedAt: createdAt,
+	}
+	err = secret.encrypt()
+	if err != nil {
+		w.WriteHeader(http.StatusMethodNotAllowed) // 405 as swagger specified
+		log.Println(err)
+		return
+	}
+	err = secret.Save()
+	if err != nil {
+		w.WriteHeader(http.StatusMethodNotAllowed) // 405 as swagger specified
+		log.Println(err)
+		return
+	}
+	decrypted, err := secret.getDecryptedSecret()
+	if err != nil {
+		w.WriteHeader(http.StatusMethodNotAllowed) // 405 as swagger specified
+		log.Println(err)
+		return
+	}
+	secret.SecretText = decrypted
+	j, _ := json.Marshal(secret)
+	w.WriteHeader(http.StatusOK)
+	_, err = fmt.Fprint(w, string(j))
+	if err != nil {
+		panic(err)
+	}
+}
+
+func GetSecretByHash(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	vars := mux.Vars(r)
+	hash, ok := vars["hash"]
+	if !ok || len(hash) != 32 {
+		w.WriteHeader(http.StatusNotFound) // 404 as swagger specified
+		return
+	}
+	original := Secret{}
+	err := LoadSecretFromDB(hash, &original)
+	if err != nil{
+		w.WriteHeader(http.StatusNotFound) // 404 as swagger specified
+		log.Println(err)
+		return
+	}
+	if original.Hash == "" {
+		w.WriteHeader(http.StatusNotFound) // 404 as swagger specified
+		return
+	}
+	response := original
+	defer original.CountDown()
+	decrypted, err := response.getDecryptedSecret()
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		panic(err)
+		return
+	}
+	response.SecretText = decrypted
+	j, _ := json.Marshal(response)
+	w.WriteHeader(http.StatusOK)
+	_, err = fmt.Fprint(w, string(j))
+	if err != nil {
+		panic(err)
+	}
 }

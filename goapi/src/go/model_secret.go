@@ -18,6 +18,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	db "github.com/olivernadj/secret-server-task/goapi/src/go/redis"
 	"io"
 	"time"
 )
@@ -40,8 +41,6 @@ type Secret struct {
 	RemainingViews int32 `json:"remainingViews,omitempty"`
 
 }
-
-
 
 func GetMD5Hash(text string) string {
 	hash := md5.Sum([]byte(text))
@@ -94,3 +93,42 @@ func (s * Secret) getDecryptedSecret() (string, error) {
 	return string(plainText), nil
 }
 
+func (s *Secret) CountDown() (err error) {
+	if s.RemainingViews == 1 {
+		err = s.Remove()
+	} else {
+		s.RemainingViews--
+		err = s.Save()
+	}
+	return err
+}
+
+func (s *Secret) Remove() (err error)  {
+	_, err = db.Del(s.Hash)
+	return err
+}
+
+func (s *Secret) Save() (err error)  {
+	j, err := json.Marshal(s)
+	exp := int64(s.ExpiresAt.Sub(time.Now()).Seconds())
+	//log.Printf("ExpiresAt %+v\n", s.ExpiresAt)
+	//log.Printf("time.Now() %+v\n", time.Now())
+	//log.Printf("exp %+v\n", exp)
+	if exp >= 0{
+		err = db.Setex(s.Hash, exp, string(j))
+	} else {
+		err = db.Set(s.Hash, string(j))
+	}
+	return err
+}
+
+func LoadSecretFromDB(hash string, s *Secret) error  {
+	if len(hash) != 32 {
+		return errors.New("length of hash must be 32")
+	}
+	j := db.MustGet(hash)
+	if j == "" {
+		return nil
+	}
+	return json.Unmarshal([]byte(j), &s)
+}
