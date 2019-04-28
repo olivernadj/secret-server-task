@@ -2,6 +2,7 @@ package redis
 
 import (
 	"github.com/gomodule/redigo/redis"
+	"log"
 	"os"
 )
 
@@ -38,6 +39,7 @@ func getConnection() redis.Conn {
 
 func Set(key string, value string) error {
 	c := getConnection()
+	log.Printf("SET %s %s", key, value)
 	_, err := c.Do("SET", key, value)
 	if err != nil {
 		return err
@@ -53,6 +55,7 @@ func MustSet(key string, value string) {
 
 func Setex(key string, expire int64, value string) error {
 	c := getConnection()
+	log.Printf("SETEX %s %d %s", key, expire, value)
 	_, err := c.Do("SETEX", key, expire, value)
 	if err != nil {
 		return err
@@ -69,7 +72,15 @@ func MustSetex(key string, expire int64, value string) {
 
 func Get(key string) (string, error) {
 	c := getConnection()
-	return redis.String(c.Do("GET", key))
+	log.Printf("GET %s\n", key)
+	r, err := c.Do("GET", key)
+	if err != nil {
+		return "", err
+	}
+	if r == nil {
+		return "", nil
+	}
+	return redis.String(r, err)
 }
 
 func MustGet(key string) string {
@@ -82,6 +93,7 @@ func MustGet(key string) string {
 
 func Del(key string) (int64, error) {
 	c := getConnection()
+	log.Printf("DEL %s", key)
 	return redis.Int64(c.Do("DEL", key))
 }
 
