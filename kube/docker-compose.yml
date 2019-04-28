@@ -16,6 +16,8 @@ services:
     restart: always
   goapi:
     image: olivernadj/secret-api-goapi:1.0.2
+    environment:
+      REDIS_ADDR: redis:6379
     ports:
       - "8080:8080"
     dns: 8.8.8.8

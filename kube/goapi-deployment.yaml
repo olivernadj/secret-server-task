@@ -18,7 +18,10 @@ spec:
         io.kompose.service: goapi
     spec:
       containers:
-      - image: olivernadj/secret-api-goapi:1.0.2
+      - env:
+        - name: REDIS_ADDR
+          value: redis:6379
+        image: olivernadj/secret-api-goapi:1.0.2
         name: goapi
         ports:
         - containerPort: 8080

@@ -104,13 +104,14 @@ kubectl set image deployment/prometheus prometheus=olivernadj/secret-api-prometh
 
 ```
 kube$ kubectl get svc
-NAME         CLUSTER-IP       EXTERNAL-IP      PORT(S)        AGE
-goapi        10.245.164.247   <none>           8080/TCP       28s
-grafana      10.245.84.205    <none>           3000/TCP       26s
-kubernetes   10.245.0.1       <none>           443/TCP        30m
-nginx        10.245.180.76    178.128.143.215  80:30906/TCP   26s
-prometheus   10.245.120.173   <none>           9090/TCP       27s
-
+NAME             TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)        AGE
+goapi            ClusterIP      10.245.250.117   <none>           8080/TCP       2m41s
+grafana          ClusterIP      10.245.162.141   <none>           3000/TCP       2m41s
+kubernetes       ClusterIP      10.245.0.1       <none>           443/TCP        3m48s
+nginx            LoadBalancer   10.245.211.98    178.128.139.70   80:31847/TCP   2m40s
+prometheus       ClusterIP      10.245.18.196    <none>           9090/TCP       2m40s
+redis            ClusterIP      10.245.22.208    <none>           6379/TCP       2m39s
+redis-exporter   ClusterIP      10.245.193.104   <none>           9121/TCP       2m41s
 ```
 
 ### Clean up everything
