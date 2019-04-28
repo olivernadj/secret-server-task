@@ -1,20 +1,37 @@
 version: '3'
 services:
+  redis:
+    image: olivernadj/secret-api-redis:1.0.2
+    ports:
+      - "6379:6379"
+    restart: always
+  redis_exporter:
+    image: olivernadj/secret-api-redis-exporter:1.0.2
+    environment:
+      REDIS_ADDR: redis:6379
+    ports:
+      - "9121:9121"
+    links:
+      - redis
+    restart: always
   goapi:
-    image: olivernadj/secret-api-goapi:1.0.0
+    image: olivernadj/secret-api-goapi:1.0.2
     ports:
       - "8080:8080"
     dns: 8.8.8.8
+    links:
+      - redis
     restart: always
   prometheus:
-    image: olivernadj/secret-api-prometheus:1.0.0
+    image: olivernadj/secret-api-prometheus:1.0.2
     ports:
       - "9090:9090"
     links:
       - goapi
+      - redis_exporter
     restart: always
   grafana:
-    image: olivernadj/secret-api-grafana:1.0.0
+    image: olivernadj/secret-api-grafana:1.0.2
     environment:
       GF_SECURITY_ADMIN_PASSWORD: 5ecret
     ports:
@@ -23,7 +40,7 @@ services:
       - prometheus
     restart: always
   nginx:
-    image: olivernadj/secret-api-nginx:1.0.0
+    image: olivernadj/secret-api-nginx:1.0.2
     ports:
       - 80:80
     links:

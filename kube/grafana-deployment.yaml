@@ -21,7 +21,7 @@ spec:
       - env:
         - name: GF_SECURITY_ADMIN_PASSWORD
           value: 5ecret
-        image: olivernadj/secret-api-grafana:1.0.0
+        image: olivernadj/secret-api-grafana:1.0.2
         name: grafana
         ports:
         - containerPort: 3000

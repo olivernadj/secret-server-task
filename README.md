@@ -72,38 +72,7 @@ $ docker-compose stop
   
 ## Build docker images
 ```
-cd grafana &&\
-  docker build -t secret-api-grafana:1.0.0 . &&\
-  docker tag secret-api-grafana:1.0.0 olivernadj/secret-api-grafana:1.0.0 &&\
-  docker push olivernadj/secret-api-grafana:1.0.0 &&\
-  docker tag secret-api-grafana:1.0.0 olivernadj/secret-api-grafana &&\
-  docker push olivernadj/secret-api-grafana &&\
-  cd ..
-  
-cd goapi &&\
-  docker build -t secret-api-goapi:1.0.0 . &&\
-  docker tag secret-api-goapi:1.0.0 olivernadj/secret-api-goapi:1.0.0 &&\
-  docker push olivernadj/secret-api-goapi:1.0.0 &&\
-  docker tag secret-api-goapi:1.0.0 olivernadj/secret-api-goapi &&\
-  docker push olivernadj/secret-api-goapi &&\
-  cd ..
-
-cd prometheus &&\
-  docker build -t secret-api-prometheus:1.0.0 . &&\
-  docker tag secret-api-prometheus:1.0.0 olivernadj/secret-api-prometheus:1.0.0 &&\
-  docker push olivernadj/secret-api-prometheus:1.0.0 &&\
-  docker tag secret-api-prometheus:1.0.0 olivernadj/secret-api-prometheus &&\
-  docker push olivernadj/secret-api-prometheus &&\
-  cd ..
-
-cd nginx &&\
-  docker build -t secret-api-nginx:1.0.0 . &&\
-  docker tag secret-api-nginx:1.0.0 olivernadj/secret-api-nginx:1.0.0 &&\
-  docker push olivernadj/secret-api-nginx:1.0.0 &&\
-  docker tag secret-api-nginx:1.0.0 olivernadj/secret-api-nginx &&\
-  docker push olivernadj/secret-api-nginx &&\
-  cd ..
-
+./docker-build.sh
 ```
 
 
@@ -112,7 +81,22 @@ cd nginx &&\
 ### Create deployments and services
 ```
 cd kube
-kube$ kubectl create -f goapi-service.yaml,goapi-deployment.yaml,prometheus-service.yaml,prometheus-deployment.yaml,grafana-service.yaml,grafana-deployment.yaml,nginx-service.yaml,nginx-deployment.yaml
+kube$ kubectl create -f goapi-deployment.yaml,grafana-deployment.yaml,nginx-deployment.yaml,prometheus-deployment.yaml,\
+redis-deployment.yaml,redis-exporter-service.yaml,goapi-service.yaml,grafana-service.yaml,nginx-service.yaml,\
+prometheus-service.yaml,redis-exporter-deployment.yaml,redis-service.yaml
+
+```
+
+### Inspect pod
+```
+kubectl describe pod <pod-id> 
+```
+
+
+### Update image
+```
+cd kube
+kubectl set image deployment/prometheus prometheus=olivernadj/secret-api-prometheus:1.0.2
 
 ```
 

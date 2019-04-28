@@ -6,14 +6,14 @@ metadata:
     kompose.version: 1.18.0 (06a2e56)
   creationTimestamp: null
   labels:
-    io.kompose.service: nginx
-  name: nginx
+    io.kompose.service: redis-exporter
+  name: redis-exporter
 spec:
   ports:
-  - name: "80"
-    port: 80
-    targetPort: 80
+  - name: "9121"
+    port: 9121
+    targetPort: 9121
   selector:
-    io.kompose.service: nginx
+    io.kompose.service: redis-exporter
 status:
   loadBalancer: {}

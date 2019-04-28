@@ -17,8 +17,9 @@ spec:
       labels:
         io.kompose.service: nginx
     spec:
+      type: LoadBalancer
       containers:
-      - image: olivernadj/secret-api-nginx:1.0.0
+      - image: olivernadj/secret-api-nginx:1.0.2
         name: nginx
         ports:
         - containerPort: 80

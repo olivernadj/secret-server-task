@@ -1,6 +1,7 @@
 version: '3'
 services:
   redis:
+    #image: olivernadj/secret-api-redis:1.0.1
     image: redis:5
     volumes:
       - /data
@@ -8,12 +9,14 @@ services:
       - "6379:6379"
     command: "--maxmemory 100mb"
 #    restart: always
-  redis_exporter:
+  redis-exporter:
     image: oliver006/redis_exporter
     environment:
       REDIS_ADDR: redis:6379
     ports:
       - "9121:9121"
+    links:
+      - redis
 #    restart: always
   goapi:
     image: golang:1.12
@@ -26,6 +29,8 @@ services:
     ports:
       - "8080:8080"
     command: go run main.go -p 8080
+    links:
+      - redis
 #    restart: always
   prometheus:
     build: ./prometheus
@@ -35,6 +40,7 @@ services:
       - "9090:9090"
     links:
       - goapi
+      - redis-exporter
 #    restart: always
   grafana:
     image: grafana/grafana:6.0.2
