@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 1,
-  "iteration": 1556158147988,
+  "iteration": 1556437179558,
   "links": [],
   "panels": [
     {
@@ -248,7 +248,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(avg_over_time(http_response_time_milliseconds_sum{service=\"$Service\", handler=\"$Handler\"}[1m])/ \navg_over_time(http_response_time_milliseconds_count{service=\"$Service\", handler=\"$Handler\"}[1m])\n* 1000) by (code)",
+          "expr": "sum(avg_over_time(http_response_time_milliseconds_sum{service=\"$Service\", handler=\"$Handler\"}[1m])/ \navg_over_time(http_response_time_milliseconds_count{service=\"$Service\", handler=\"$Handler\"}[1m])) by (code)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{code}}",
@@ -330,7 +330,7 @@
       "renderer": "flot",
       "repeat": null,
       "repeatDirection": "h",
-      "repeatIteration": 1556158147988,
+      "repeatIteration": 1556437179558,
       "repeatPanelId": 6,
       "scopedVars": {
         "Handler": {
@@ -344,7 +344,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(avg_over_time(http_response_time_milliseconds_sum{service=\"$Service\", handler=\"$Handler\"}[1m])/ \navg_over_time(http_response_time_milliseconds_count{service=\"$Service\", handler=\"$Handler\"}[1m])\n* 1000) by (code)",
+          "expr": "sum(avg_over_time(http_response_time_milliseconds_sum{service=\"$Service\", handler=\"$Handler\"}[1m])/ \navg_over_time(http_response_time_milliseconds_count{service=\"$Service\", handler=\"$Handler\"}[1m])) by (code)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{code}}",
@@ -426,7 +426,7 @@
       "renderer": "flot",
       "repeat": null,
       "repeatDirection": "h",
-      "repeatIteration": 1556158147988,
+      "repeatIteration": 1556437179558,
       "repeatPanelId": 6,
       "scopedVars": {
         "Handler": {
@@ -440,7 +440,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(avg_over_time(http_response_time_milliseconds_sum{service=\"$Service\", handler=\"$Handler\"}[1m])/ \navg_over_time(http_response_time_milliseconds_count{service=\"$Service\", handler=\"$Handler\"}[1m])\n* 1000) by (code)",
+          "expr": "sum(avg_over_time(http_response_time_milliseconds_sum{service=\"$Service\", handler=\"$Handler\"}[1m])/ \navg_over_time(http_response_time_milliseconds_count{service=\"$Service\", handler=\"$Handler\"}[1m])) by (code)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{code}}",
@@ -506,7 +506,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "description": "The φ-quantile is the observation value that ranks at number φ*N among the N observations. Examples for φ-quantiles: The 0.5-quantile is known as the median. The 0.95-quantile is the 95th percentile.",
+      "description": "The φ-quantile is the observation value that ranks at number φ*N among the N observations. \nExamples:\n - 0.5-quantile means 50% of the request was faster than the metric indicate.\n - 0.9-quantile means 90% of the request was faster than the metric indicate.\n - 0.99-quantile means 99% of the request was faster than the metric indicate.\n",
       "fill": 1,
       "gridPos": {
         "h": 5,
@@ -551,7 +551,7 @@
           "expr": "sum(http_response_time_milliseconds{service=\"$Service\", handler=~\"$Handler\"}) by (quantile)",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "{{quantile}}",
+          "legendFormat": "{{quantile}}-quantile",
           "refId": "A"
         }
       ],
@@ -601,7 +601,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "description": "The φ-quantile is the observation value that ranks at number φ*N among the N observations. Examples for φ-quantiles: The 0.5-quantile is known as the median. The 0.95-quantile is the 95th percentile.",
+      "description": "The φ-quantile is the observation value that ranks at number φ*N among the N observations. \nExamples:\n - 0.5-quantile means 50% of the request was faster than the metric indicate.\n - 0.9-quantile means 90% of the request was faster than the metric indicate.\n - 0.99-quantile means 99% of the request was faster than the metric indicate.\n",
       "fill": 1,
       "gridPos": {
         "h": 5,
@@ -631,7 +631,7 @@
       "renderer": "flot",
       "repeat": null,
       "repeatDirection": "h",
-      "repeatIteration": 1556158147988,
+      "repeatIteration": 1556437179558,
       "repeatPanelId": 14,
       "scopedVars": {
         "Handler": {
@@ -648,7 +648,7 @@
           "expr": "sum(http_response_time_milliseconds{service=\"$Service\", handler=~\"$Handler\"}) by (quantile)",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "{{quantile}}",
+          "legendFormat": "{{quantile}}-quantile",
           "refId": "A"
         }
       ],
@@ -698,7 +698,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "description": "The φ-quantile is the observation value that ranks at number φ*N among the N observations. Examples for φ-quantiles: The 0.5-quantile is known as the median. The 0.95-quantile is the 95th percentile.",
+      "description": "The φ-quantile is the observation value that ranks at number φ*N among the N observations. \nExamples:\n - 0.5-quantile means 50% of the request was faster than the metric indicate.\n - 0.9-quantile means 90% of the request was faster than the metric indicate.\n - 0.99-quantile means 99% of the request was faster than the metric indicate.\n",
       "fill": 1,
       "gridPos": {
         "h": 5,
@@ -728,7 +728,7 @@
       "renderer": "flot",
       "repeat": null,
       "repeatDirection": "h",
-      "repeatIteration": 1556158147988,
+      "repeatIteration": 1556437179558,
       "repeatPanelId": 14,
       "scopedVars": {
         "Handler": {
@@ -745,7 +745,7 @@
           "expr": "sum(http_response_time_milliseconds{service=\"$Service\", handler=~\"$Handler\"}) by (quantile)",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "{{quantile}}",
+          "legendFormat": "{{quantile}}-quantile",
           "refId": "A"
         }
       ],
@@ -825,7 +825,6 @@
       {
         "allValue": null,
         "current": {
-          "tags": [],
           "text": "All",
           "value": [
             "$__all"
@@ -884,5 +883,5 @@
   "timezone": "",
   "title": "API Dashboard",
   "uid": "ZMx9LGkWz",
-  "version": 29
+  "version": 31
 }
