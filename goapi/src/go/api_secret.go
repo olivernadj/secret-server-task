@@ -11,6 +11,7 @@ package swagger
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -29,14 +30,36 @@ type AddSecretParams struct {
 }
 
 type ErrorResponse struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
+	Message string `json:"message" xml:"message" `
 }
 
 
-//func responseWriter(w http.ResponseWriter, r *http.Request, statusCode int, body interface{}) {
-//
-//}
+func responseWriter(w http.ResponseWriter, r *http.Request, statusCode int, body interface{}) {
+	w.WriteHeader(statusCode)
+	if r.Header.Get("Accept") == "application/xml" {
+		w.Header().Set("Content-Type", "application/xml; charset=UTF-8")
+		x, err := xml.Marshal(body)
+		if err != nil {
+			log.Println(err)
+			panic(err)
+		}
+		_, err = fmt.Fprint(w, string(x))
+		if err != nil {
+			log.Println(err)
+			panic(err)
+		}
+	} else {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		j, err := json.Marshal(body)
+		if err != nil {
+			panic(err)
+		}
+		_, err = fmt.Fprint(w, string(j))
+		if err != nil {
+			panic(err)
+		}
+	}
+}
 
 
 func (sp *AddSecretParams) Validate() error {
@@ -58,10 +81,10 @@ func (sp *AddSecretParams) Validate() error {
 
 
 func AddSecret(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	err := r.ParseForm()
 	if err != nil {
-		w.WriteHeader(http.StatusMethodNotAllowed) // 405 as swagger specified
+		// 405 as swagger specified
+		responseWriter(w, r, http.StatusMethodNotAllowed, ErrorResponse{Message:"invalid form data"})
 		log.Println(err)
 		return
 	}
@@ -73,8 +96,8 @@ func AddSecret(w http.ResponseWriter, r *http.Request) {
 	}
 	err = sp.Validate()
 	if err != nil {
-		w.WriteHeader(http.StatusMethodNotAllowed) // 405 as swagger specified
-		fmt.Fprint(w, err)
+		// 405 as swagger specified
+		responseWriter(w, r, http.StatusMethodNotAllowed, ErrorResponse{Message:string(err.Error())})
 		return
 	}
 	expAfter, _ := strconv.ParseInt (sp.ExpireAfter, 10, 64)
@@ -88,63 +111,59 @@ func AddSecret(w http.ResponseWriter, r *http.Request) {
 	}
 	err = secret.encrypt()
 	if err != nil {
-		w.WriteHeader(http.StatusMethodNotAllowed) // 405 as swagger specified
+		// 405 as swagger specified
+		responseWriter(w, r, http.StatusMethodNotAllowed, ErrorResponse{Message:"encryption error"})
 		log.Println(err)
 		return
 	}
 	err = secret.Save()
 	if err != nil {
-		w.WriteHeader(http.StatusMethodNotAllowed) // 405 as swagger specified
+		// 405 as swagger specified
+		responseWriter(w, r, http.StatusMethodNotAllowed, ErrorResponse{Message:"database connection error"})
 		log.Println(err)
 		return
 	}
 	decrypted, err := secret.getDecryptedSecret()
 	if err != nil {
-		w.WriteHeader(http.StatusMethodNotAllowed) // 405 as swagger specified
+		// 405 as swagger specified
+		responseWriter(w, r, http.StatusMethodNotAllowed, ErrorResponse{Message:"decryption error"})
 		log.Println(err)
 		return
 	}
 	secret.SecretText = decrypted
-	j, _ := json.Marshal(secret)
-	w.WriteHeader(http.StatusOK)
-	_, err = fmt.Fprint(w, string(j))
-	if err != nil {
-		panic(err)
-	}
+	responseWriter(w, r, http.StatusOK, secret)
 }
 
 func GetSecretByHash(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 	hash, ok := vars["hash"]
 	if !ok || len(hash) != 32 {
-		w.WriteHeader(http.StatusNotFound) // 404 as swagger specified
+		// 404 as swagger specified
+		responseWriter(w, r, http.StatusNotFound, ErrorResponse{Message:"invalid hash"})
 		return
 	}
 	original := Secret{}
 	err := LoadSecretFromDB(hash, &original)
 	if err != nil{
-		w.WriteHeader(http.StatusNotFound) // 404 as swagger specified
+		// 404 as swagger specified
+		responseWriter(w, r, http.StatusNotFound, ErrorResponse{Message:"database connection error"})
 		log.Println(err)
 		return
 	}
 	if original.Hash == "" {
-		w.WriteHeader(http.StatusNotFound) // 404 as swagger specified
+		// 404 as swagger specified
+		responseWriter(w, r, http.StatusNotFound, ErrorResponse{Message:"not found"})
 		return
 	}
 	response := original
 	defer original.CountDown()
 	decrypted, err := response.getDecryptedSecret()
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
+		// 404 as swagger specified
+		responseWriter(w, r, http.StatusNotFound, ErrorResponse{Message:"decryption error"})
 		panic(err)
 		return
 	}
 	response.SecretText = decrypted
-	j, _ := json.Marshal(response)
-	w.WriteHeader(http.StatusOK)
-	_, err = fmt.Fprint(w, string(j))
-	if err != nil {
-		panic(err)
-	}
+	responseWriter(w, r, http.StatusOK, response)
 }

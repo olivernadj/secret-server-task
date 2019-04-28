@@ -26,19 +26,19 @@ import (
 type Secret struct {
 
 	// Unique hash to identify the secrets
-	Hash string `json:"hash,omitempty"`
+	Hash string `json:"hash,omitempty" xml:"hash"`
 
 	// The secret itself
-	SecretText string `json:"secretText,omitempty"`
+	SecretText string `json:"secretText,omitempty" xml:"secretText"`
 
 	// The date and time of the creation
-	CreatedAt time.Time `json:"createdAt,omitempty"`
+	CreatedAt time.Time `json:"createdAt,omitempty" xml:"createdAt"`
 
 	// The secret cannot be reached after this time
-	ExpiresAt time.Time `json:"expiresAt,omitempty"`
+	ExpiresAt time.Time `json:"expiresAt,omitempty" xml:"expiresAt"`
 
 	// How many times the secret can be viewed
-	RemainingViews int32 `json:"remainingViews,omitempty"`
+	RemainingViews int32 `json:"remainingViews,omitempty" xml:"remainingViews"`
 
 }
 
@@ -75,7 +75,6 @@ func (s * Secret) getDecryptedSecret() (string, error) {
 		return "", errors.New("secret has no hash")
 	}
 	data, err := base64.StdEncoding.DecodeString(s.SecretText)
-	// data := []byte(s.SecretText)
 	block, err := aes.NewCipher([]byte(s.Hash))
 	if err != nil {
 		return "", err
@@ -111,10 +110,7 @@ func (s *Secret) Remove() (err error)  {
 func (s *Secret) Save() (err error)  {
 	j, err := json.Marshal(s)
 	exp := int64(s.ExpiresAt.Sub(time.Now()).Seconds())
-	//log.Printf("ExpiresAt %+v\n", s.ExpiresAt)
-	//log.Printf("time.Now() %+v\n", time.Now())
-	//log.Printf("exp %+v\n", exp)
-	if exp >= 0{
+	if exp > 0{
 		err = db.Setex(s.Hash, exp, string(j))
 	} else {
 		err = db.Set(s.Hash, string(j))
