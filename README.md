@@ -24,7 +24,7 @@ It is totaly OK to ask if something is not clear.
 ## Production endpoints
 Make sure your hosts config resolve these hosts.
 ```
-178.128.143.215 api.your-secret-server.com grafana.your-secret-server.com prometheus.your-secret-server.com
+127.0.0.1 api.your-secret-server.com grafana.your-secret-server.com prometheus.your-secret-server.com
 ```
 
 
